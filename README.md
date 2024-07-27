@@ -11,27 +11,27 @@ at the end of the day, it's just a overengineered product :)
 Here are Some Of my iPhone Modes
 
 Focus Modes:
-    - Personal
-    - Work
-    - DND
-    - Commuting
+- Personal
+- Work
+- DND
+- Commuting
 
 Status Updates: 
-    1. Personal
-        - active: False
-        - status: Nil
-        - Pause notification
-    2. Work
-        - active: True
-        - status: Available
-        - Unpause notification
-    3. DND
-        - active: True
-        - status: Focusing :technologist:
-        - Pause notification
-    4. Commuting
-        - active: True
-        - status: :bus: Commuting
-        - Unpause notification
+1. Personal
+     - active: False
+    - status: Nil
+    - Pause notification
+2. Work
+    - active: True
+    - status: Available
+    - Unpause notification
+3. DND
+    - active: True
+    - status: Focusing :technologist:
+    - Pause notification
+4. Commuting
+    - active: True
+    - status: :bus: Commuting
+    - Unpause notification
 
 ![automation](https://www.milner.com/images/default-source/articles/buzz.png?sfvrsn=e0080dd3_2)
