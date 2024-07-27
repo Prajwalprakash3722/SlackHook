@@ -34,4 +34,8 @@ Status Updates:
     - status: :bus: Commuting
     - Unpause notification
 
+## TODO
+1. Get the Estimated time to commute and send the status expiration only for commuting
+
+
 ![automation](https://www.milner.com/images/default-source/articles/buzz.png?sfvrsn=e0080dd3_2)
