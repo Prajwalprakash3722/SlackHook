@@ -6,13 +6,17 @@ certifi==2024.7.4
 charset-normalizer==3.3.2
 click==8.1.7
 frozenlist==1.4.1
+gunicorn==22.0.0
+h11==0.14.0
 idna==3.7
 itsdangerous==2.2.0
 Jinja2==3.1.4
 MarkupSafe==2.1.5
 multidict==6.0.5
+packaging==24.1
 requests==2.32.3
 slack_sdk==3.31.0
 urllib3==2.2.2
+uvicorn==0.30.3
 Werkzeug==3.0.3
 yarl==1.9.4

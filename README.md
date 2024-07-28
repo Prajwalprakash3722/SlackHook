@@ -37,5 +37,12 @@ Status Updates:
 ## TODO
 1. Get the Estimated time to commute and send the status expiration only for commuting
 
-
 ![automation](https://www.milner.com/images/default-source/articles/buzz.png?sfvrsn=e0080dd3_2)
+
+## Running Locally
+
+1. Export the `SLACK_BOT_TOKEN` to environment
+2. Install all requirements `pip3 install -r requirements.txt`
+3. Run
+    - local setup: `python3 app.py`
+    - using gunicorn: `gunicorn app:app --bind localhost:3000 --worker-class aiohttp.GunicornWebWorker --workers=4`
