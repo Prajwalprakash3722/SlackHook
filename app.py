@@ -1,6 +1,6 @@
 # author : @prajwal.p
 # created_at: Fri 26 Jul 2024 17:03:33 IST
-# updated_at : Sat Jul 27 13:15:19 IST 2024
+# updated_at: Mon Jul 29 2024 14:37:55 IST 
 import os
 import logging
 import time
@@ -25,7 +25,7 @@ focus_modes: Dict[str, Dict[str, Any]] = {
         "status": "",
         "notification": False,
         "status_emoji": "",
-        "presence": "Away",
+        "presence": "away",
         "status_expiration": None,
     },
     "work": {
@@ -33,7 +33,7 @@ focus_modes: Dict[str, Dict[str, Any]] = {
         "status": "Available",
         "notification": True,
         "status_emoji": "",
-        "presence": "Active",
+        "presence": "auto",
         "status_expiration": None,
     },
     "dnd": {
@@ -41,7 +41,7 @@ focus_modes: Dict[str, Dict[str, Any]] = {
         "status": "Focusing",
         "notification": False,
         "status_emoji": ":technologist:",
-        "presence": "Active",
+        "presence": "auto",
         "status_expiration": 30,
     },
     "commuting": {
@@ -49,7 +49,7 @@ focus_modes: Dict[str, Dict[str, Any]] = {
         "status": "Commuting",
         "notification": True,
         "status_emoji": ":bus:",
-        "presence": "Active",
+        "presence": "auto",
         "status_expiration": 60,
     },
     "clear": {},
@@ -104,7 +104,8 @@ async def send_slack_user_snooze(client: AsyncWebClient, notifications: bool) ->
         if notifications:
             response = await client.dnd_endSnooze()
         else:
-            response = await client.dnd_setSnooze()
+            time_till_snooze = (12*60) # default is 12 hour snooze
+            response = await client.dnd_setSnooze(num_minutes=time_till_snooze)
         response.validate()
     except SlackApiError as e:
         logger.error(f"Error setting snooze: {e.response['error']}")
@@ -118,8 +119,10 @@ async def handle_update_status(request: web.Request) -> web.Response:
         profile = build_profile(focus_mode)
         logger.info(f"Setting {focus_mode} mode with profile: {profile}")
         await send_slack_profile(client, profile)
-        # await send_slack_user_presence(client, focus_modes[focus_mode]["presence"])
-        # await send_slack_user_snooze(client, focus_modes[focus_mode]["notification"])
+        logger.info(f"setting user presence to {focus_modes[focus_mode]["presence"]}")
+        logger.info(f"setting user snooze notifications to {focus_modes[focus_mode]["notification"]}")
+        await send_slack_user_presence(client, focus_modes[focus_mode]["presence"])
+        await send_slack_user_snooze(client, focus_modes[focus_mode]["notification"])
         return web.json_response(data={"success": True})
     return web.json_response(
         data={"success": False, "error": "Invalid or missing focus_mode"}
