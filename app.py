@@ -55,9 +55,17 @@ focus_modes: Dict[str, Dict[str, Any]] = {
     "clear": {},
 }
 
+async def update_slack(update_func, **kwargs) -> None:
+    """General function to handle Slack updates."""
+    try:
+        response = await update_func(**kwargs)
+        response.validate()
+    except SlackApiError as e:
+        logger.error(f"Slack API error: {e.response['error']}")
+        raise
 
 def build_profile(focus_mode: str) -> Dict[str, Any]:
-    """Build the profile dictionary based on the focus mode."""
+    """Build the profile based on the focus mode."""
     if focus_mode == "clear":
         return {"status_text": "", "status_emoji": ""}
     
@@ -78,64 +86,45 @@ def build_profile(focus_mode: str) -> Dict[str, Any]:
     
     return profile
 
-async def send_slack_profile(client: AsyncWebClient, profile: Dict[str, Any]) -> None:
-    """Send the updated profile status to Slack."""
-    try:
-        response = await client.users_profile_set(profile=profile)
-        response.validate()
-    except SlackApiError as e:
-        logger.error(f"Error setting profile: {e.response['error']}")
-        raise
-
-
-async def send_slack_user_presence(client: AsyncWebClient, presence: str) -> None:
-    """Set the user's presence status on Slack."""
-    try:
-        response = await client.users_setPresence(presence=presence)
-        response.validate()
-    except SlackApiError as e:
-        logger.error(f"Error setting presence: {e.response['error']}")
-        raise
-
-
-async def send_slack_user_snooze(client: AsyncWebClient, notifications: bool) -> None:
-    """Control the user's Do Not Disturb settings on Slack."""
-    try:
-        if notifications:
-            response = await client.dnd_endSnooze()
-        else:
-            time_till_snooze = (12*60) # default is 12 hour snooze
-            response = await client.dnd_setSnooze(num_minutes=time_till_snooze)
-        response.validate()
-    except SlackApiError as e:
-        logger.error(f"Error setting snooze: {e.response['error']}")
-        raise
-
-
 async def handle_update_status(request: web.Request) -> web.Response:
     """Handle requests to update the user's Slack status."""
     focus_mode = request.query.get("focus_mode")
-    if focus_mode and focus_mode in focus_modes:
-        profile = build_profile(focus_mode)
-        logger.info(f"Setting {focus_mode} mode with profile: {profile}")
-        await send_slack_profile(client, profile)
-        logger.info(f"setting user presence to {focus_modes[focus_mode]["presence"]}")
-        logger.info(f"setting user snooze notifications to {focus_modes[focus_mode]["notification"]}")
-        await send_slack_user_presence(client, focus_modes[focus_mode]["presence"])
-        await send_slack_user_snooze(client, focus_modes[focus_mode]["notification"])
-        return web.json_response(data={"success": True})
-    return web.json_response(
-        data={"success": False, "error": "Invalid or missing focus_mode"}
-    )
+    if not focus_mode or focus_mode not in focus_modes:
+        return web.json_response(data={"success": False, "error": "Invalid or missing focus_mode"}, status=400)
+    
+    profile = build_profile(focus_mode)
+    presence = focus_modes[focus_mode]["presence"]
+    notifications = focus_modes[focus_mode]["notification"]
 
+    try:
+        # Update user profile
+        logger.info(f"Setting {focus_mode} mode with profile: {profile}")
+        await update_slack(client.users_profile_set, profile=profile)
+
+        # Update presence
+        logger.info(f"Setting user presence to {presence}")
+        await update_slack(client.users_setPresence, presence=presence)
+
+        # Update snooze notifications
+        logger.info(f"Setting user snooze notifications to {notifications}")
+        if notifications:
+            await update_slack(client.dnd_endSnooze)
+        else:
+            time_till_snooze = 12 * 60  # default is 12 hour snooze
+            await update_slack(client.dnd_setSnooze, num_minutes=time_till_snooze)
+
+        return web.json_response(data={"success": True})
+
+    except SlackApiError as e:
+
+        logger.error(f"Failed to update Slack: {e}")
+        return web.json_response(data={"success": False, "error": str(e)}, status=500)
 
 async def handle_success(request: web.Request) -> web.Response:
     """Health check route."""
-    return web.json_response(data={"ok": True})
-
+    return web.json_response(data={"ok": True}, status=200)
 
 app = web.Application()
-
 app.add_routes([web.get("/", handle_success), web.get("/update", handle_update_status)])
 
 if __name__ == "__main__":
