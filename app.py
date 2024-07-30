@@ -53,6 +53,22 @@ focus_modes: Dict[str, Dict[str, Any]] = {
         "status_expiration": 60,
     },
     "clear": {},
+    "lunch": {
+        "active": True,
+        "status": "Lunch",
+        "notification": True,
+        "status_emoji": ":lunch-:",
+        "presence": "auto",
+        "status_expiration": 60,
+    },
+    "cncall`": {
+        "active": True,
+        "status": "Oncall",
+        "notification": True,
+        "status_emoji": ":alert:",
+        "presence": "auto",
+        "status_expiration": 60*7,
+    },
 }
 
 async def update_slack(update_func, **kwargs) -> None:
