@@ -61,7 +61,7 @@ focus_modes: Dict[str, Dict[str, Any]] = {
         "presence": "auto",
         "status_expiration": 60,
     },
-    "cncall`": {
+    "oncall": {
         "active": True,
         "status": "Oncall",
         "notification": True,
